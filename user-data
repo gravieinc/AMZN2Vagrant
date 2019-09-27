@@ -14,7 +14,6 @@ chpasswd:
     root:vagrant
   expire: False
 
-
 # Required so we can install VirtualBox Guest Additions later
 packages:
   - kernel-devel
@@ -27,9 +26,21 @@ packages:
 
 
 runcmd:
-
   # Stop cloud-init from randomizing root password on startup
   - sed -i 's/.*root:RANDOM/#&/g' /etc/cloud/cloud.cfg.d/99_onprem.cfg
 
-  # Make it look like RedHat
-  - ln -s /etc/system-release /etc/redhat-release
+  # Remove old redhat-release file
+  - rm /etc/redhat-release
+
+  # Get EPEL
+  - yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  - yum install -y epel-release
+
+  # Install salt
+  - yum install https://s3.amazonaws.com/gravie-devops-public/salt-amzn-repo-2017.7-1.amzn1.noarch.rpm -y
+  - sed -i 's/priority=10/priority=20/g' /etc/yum.repos.d/salt-amzn-2017.7.repo
+  - yum install -y salt-minion
+
+  - yum update -y
+  - yum clean all
+  - rm -rf /var/cache/yum
